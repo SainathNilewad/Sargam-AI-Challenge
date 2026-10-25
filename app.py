@@ -409,13 +409,29 @@ with tab2:
             st.rerun()
     else:
         df_display = df_all.copy()
+        
+        def parse_conf(c):
+            if isinstance(c, (int, float)):
+                return float(c)
+            c_str = str(c).strip().lower()
+            if c_str == "high":
+                return 0.95
+            elif c_str == "low":
+                return 0.40
+            try:
+                return float(c_str)
+            except Exception:
+                return 0.50
+
+        df_display["conf_score"] = df_display["confidence"].apply(parse_conf)
+
         if filter_option == "Needs Review (Confidence < 0.7 or Unclear)":
-            df_display = df_display[(df_display["confidence"] < 0.7) | (df_display["topic"] == "unclear") | (df_display["topic"].isnull())]
+            df_display = df_display[(df_display["conf_score"] < 0.7) | (df_display["topic"] == "unclear") | (df_display["topic"].isnull())]
         elif filter_option == "Tagged Confirmed":
-            df_display = df_display[(df_display["confidence"] >= 0.7) & (df_display["topic"] != "unclear") & (df_display["topic"].notnull())]
+            df_display = df_display[(df_display["conf_score"] >= 0.7) & (df_display["topic"] != "unclear") & (df_display["topic"].notnull())]
 
         st.dataframe(
-            df_display[["id", "paper", "year", "q_no", "marks", "topic", "confidence", "evidence_source", "text"]],
+            df_display[["id", "paper", "year", "q_no", "marks", "topic", "conf_score", "evidence_source", "text"]],
             column_config={
                 "id": st.column_config.NumberColumn("ID", width="small"),
                 "paper": st.column_config.TextColumn("Source Paper", width="medium"),
@@ -423,7 +439,7 @@ with tab2:
                 "q_no": st.column_config.TextColumn("Q#", width="small"),
                 "marks": st.column_config.NumberColumn("Marks", width="small"),
                 "topic": st.column_config.TextColumn("Curriculum Topic", width="medium"),
-                "confidence": st.column_config.ProgressColumn("Confidence", min_value=0.0, max_value=1.0, format="%.2f"),
+                "conf_score": st.column_config.ProgressColumn("Confidence", min_value=0.0, max_value=1.0, format="%.2f"),
                 "evidence_source": st.column_config.TextColumn("Evidence Reference", width="medium"),
                 "text": st.column_config.TextColumn("Question Content", width="large")
             },
