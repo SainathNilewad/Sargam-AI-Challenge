@@ -1,29 +1,29 @@
 {
   "status": "completed",
   "steps_taken": 6,
-  "final_answer": "Based on the analysis of past papers and your requirements, here is your data-backed study plan: You have 64 total study hours over 4 weeks (16 hours/week). The plan prioritizes your weak topics (Triangles, Introduction to Trigonometry) with boosted hours, while also covering high-frequency topics like Arithmetic Progressions (6.3 hours), Circles (6.2 hours), and Coordinate Geometry (6.2 hours). Key areas to focus on: Triangles (12 hours), Introduction to Trigonometry (10 hours), Arithmetic Progressions (6.3 hours), Circles (6.2 hours), and Coordinate Geometry (6.2 hours). The remaining topics (Quadratic Equations, Real Numbers, Polynomials, Linear Equations, Quadratic Equations, AP, Triangles, Coordinate Geometry, Intro to Trig, Trig Applications, Circles, Areas of Circles, Surface Areas/Volumes, Statistics, Probability) are allocated 29.3 hours across the 4 weeks. Review items flagged for low confidence/unclear topics should be addressed in Week 4. Start with your weakest topics (Triangles and Introduction to Trigonometry) in Week 1 to build momentum. Follow the weekly breakdown: Week 1 (16h), Week 2 (16h), Week 3 (16h), Week 4 (16h).",
+  "final_answer": "Here is your data-backed 4-week study plan based on 30 past questions (63 marks):\n\n**Key Stats:**\n- Top topics by frequency: Circles (20%), Statistics (13.3%), Polynomials (16.7%), Pair of Linear Equations (10%), Surface Areas and Volumes (10%)\n- Your weak topics (Triangles, Introduction to Trigonometry) have 0% historical weightage in past papers, but we are boosting them to 4.5 hours each to build your confidence.\n\n**Your 4-Week Schedule (16 hrs/week = 64 total hours):**\n\n**Week 1 (24.5 hrs): Focus on High-Weightage Topics**\n- Circles: 10.5 hrs (19.1% weightage) - Highest priority\n- Statistics: 7.9 hrs (14.3% weightage)\n- Pair of Linear Equations: 6.1 hrs (11.1% weightage)\n\n**Week 2 (16.7 hrs): Medium-Weightage + Your Weak Topic**\n- Surface Areas and Volumes: 6.1 hrs (11.1% weightage)\n- Polynomials: 6.1 hrs (11.1% weightage)\n- Introduction to Trigonometry: 4.5 hrs (weak topic boost)\n\n**Week 3 (13.3 hrs): Your Other Weak Topic + Medium Topics**\n- Triangles: 4.5 hrs (weak topic boost)\n- Some Applications of Trigonometry: 4.4 hrs (7.9% weightage)\n- Quadratic Equations: 4.4 hrs (7.9% weightage)\n\n**Week 4 (9.5 hrs): Revision & Lower-Weightage Topics**\n- Arithmetic Progressions: 3.5 hrs (6.3% weightage)\n- Real Numbers: 2.6 hrs (4.8% weightage)\n- Coordinate Geometry: 1.7 hrs (3.2% weightage)\n- Probability: 1.7 hrs (3.2% weightage)\n\n**Strategy:** Prioritize Circles and Statistics first as they carry the most marks. Use Weeks 2-3 to strengthen your weak areas. Use Week 4 for revision and tackling lower-weightage topics. Total marks covered: 63.",
   "trace": [
     {
       "step": 2,
       "action": "ask_user",
-      "question": "I can help you prepare for your exam! To build a data-backed study plan, I need to know: 1) How many hours per week can you study? 2) What is your exam date or how many weeks until the exam? 3) Which syllabus topics are your weakest?",
+      "question": "How many hours can you study each week for the next 4 weeks, and which topics are you weakest in?",
       "answer": "I can study 16 hours per week.",
-      "reason": "I need your weekly study hours and exam timeline to generate a personalized study plan using past paper analysis."
+      "reason": "To build a personalized study plan, I need to know your weekly study hours and identify your weak topics."
     },
     {
       "step": 3,
       "action": "ask_user",
-      "question": "Great! To build your study plan, I need to know: 1) What is your exact exam date or how many weeks until the exam? 2) Which syllabus topics do you feel are your weakest?",
+      "question": "Which topics are you weakest in? Please list them from the official syllabus: Real Numbers, Polynomials, Pair of Linear Equations, Quadratic Equations, Arithmetic Progressions, Triangles, Coordinate Geometry, Introduction to Trigonometry, Some Applications of Trigonometry, Circles, Areas Related to Circles, Surface Areas and Volumes, Statistics, Probability.",
       "answer": "My weak topics are Triangles and Introduction to Trigonometry.",
-      "reason": "I need your exam timeline and weak topics to generate a personalized study schedule using topic frequency analysis from past papers."
+      "reason": "To build a targeted study plan, I need to know which topics you find most difficult."
     },
     {
       "step": 4,
       "action": "tool",
       "tool": "get_topic_stats",
       "input": {},
-      "output_preview": "{'total_questions': 30, 'total_marks': 48.0, 'topics': {'Arithmetic Progressions': {'question_count': 3, 'frequency_pct': 10.0, 'total_marks': 5.0, 'weightage_pct': 10.42}, 'Circles': {'question_count...",
-      "reason": "I need to analyze the frequency and weightage of topics from past papers to build a data-backed study plan for the student."
+      "output_preview": "{'total_questions': 30, 'total_marks': 63.0, 'topics': {'Circles': {'question_count': 6, 'frequency_pct': 20.0, 'total_marks': 12.0, 'weightage_pct': 19.05}, 'Statistics': {'question_count': 4, 'frequ...",
+      "reason": "To build a data-backed study plan, I need to analyze topic frequency and marks weightage from past papers."
     },
     {
       "step": 5,
@@ -37,14 +37,14 @@
           "Introduction to Trigonometry"
         ]
       },
-      "output_preview": "{'total_available_hours': 64.0, 'weekly_hours': 16.0, 'total_weeks': 4, 'weak_topics_boosted': ['Triangles', 'Introduction to Trigonometry'], 'topic_hours': {'Arithmetic Progressions': 6.3, 'Circles':...",
-      "reason": "Building a weekly study schedule based on the student's 16 hours per week, 4-week timeline, and weak topics (Triangles, Introduction to Trigonometry), using the topic stats data."
+      "output_preview": "{'total_available_hours': 64.0, 'weekly_hours': 16.0, 'total_weeks': 4, 'weak_topics_boosted': ['Introduction to Trigonometry', 'Triangles'], 'topic_hours': {'Circles': 10.5, 'Statistics': 7.9, 'Pair ...",
+      "reason": "To create a personalized 4-week study schedule based on your 16 weekly hours and weak topics in Triangles and Introduction to Trigonometry."
     },
     {
       "step": 6,
       "action": "final",
-      "answer": "Based on the analysis of past papers and your requirements, here is your data-backed study plan: You have 64 total study hours over 4 weeks (16 hours/week). The plan prioritizes your weak topics (Triangles, Introduction to Trigonometry) with boosted hours, while also covering high-frequency topics like Arithmetic Progressions (6.3 hours), Circles (6.2 hours), and Coordinate Geometry (6.2 hours). Key areas to focus on: Triangles (12 hours), Introduction to Trigonometry (10 hours), Arithmetic Progressions (6.3 hours), Circles (6.2 hours), and Coordinate Geometry (6.2 hours). The remaining topics (Quadratic Equations, Real Numbers, Polynomials, Linear Equations, Quadratic Equations, AP, Triangles, Coordinate Geometry, Intro to Trig, Trig Applications, Circles, Areas of Circles, Surface Areas/Volumes, Statistics, Probability) are allocated 29.3 hours across the 4 weeks. Review items flagged for low confidence/unclear topics should be addressed in Week 4. Start with your weakest topics (Triangles and Introduction to Trigonometry) in Week 1 to build momentum. Follow the weekly breakdown: Week 1 (16h), Week 2 (16h), Week 3 (16h), Week 4 (16h).",
-      "reason": "Final answer completed: Provided a comprehensive study plan based on topic stats, student's weak areas, and available time."
+      "answer": "Here is your data-backed 4-week study plan based on 30 past questions (63 marks):\n\n**Key Stats:**\n- Top topics by frequency: Circles (20%), Statistics (13.3%), Polynomials (16.7%), Pair of Linear Equations (10%), Surface Areas and Volumes (10%)\n- Your weak topics (Triangles, Introduction to Trigonometry) have 0% historical weightage in past papers, but we are boosting them to 4.5 hours each to build your confidence.\n\n**Your 4-Week Schedule (16 hrs/week = 64 total hours):**\n\n**Week 1 (24.5 hrs): Focus on High-Weightage Topics**\n- Circles: 10.5 hrs (19.1% weightage) - Highest priority\n- Statistics: 7.9 hrs (14.3% weightage)\n- Pair of Linear Equations: 6.1 hrs (11.1% weightage)\n\n**Week 2 (16.7 hrs): Medium-Weightage + Your Weak Topic**\n- Surface Areas and Volumes: 6.1 hrs (11.1% weightage)\n- Polynomials: 6.1 hrs (11.1% weightage)\n- Introduction to Trigonometry: 4.5 hrs (weak topic boost)\n\n**Week 3 (13.3 hrs): Your Other Weak Topic + Medium Topics**\n- Triangles: 4.5 hrs (weak topic boost)\n- Some Applications of Trigonometry: 4.4 hrs (7.9% weightage)\n- Quadratic Equations: 4.4 hrs (7.9% weightage)\n\n**Week 4 (9.5 hrs): Revision & Lower-Weightage Topics**\n- Arithmetic Progressions: 3.5 hrs (6.3% weightage)\n- Real Numbers: 2.6 hrs (4.8% weightage)\n- Coordinate Geometry: 1.7 hrs (3.2% weightage)\n- Probability: 1.7 hrs (3.2% weightage)\n\n**Strategy:** Prioritize Circles and Statistics first as they carry the most marks. Use Weeks 2-3 to strengthen your weak areas. Use Week 4 for revision and tackling lower-weightage topics. Total marks covered: 63.",
+      "reason": "Final answer completed with personalized study plan based on topic stats and student's weak areas."
     }
   ],
   "context": {

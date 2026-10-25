@@ -3,7 +3,7 @@ import re
 import json
 import traceback
 import pandas as pd
-from typing import List, Dict, Any, Callable, Optional
+from typing import List, Dict, Any, Callable, Optional, Tuple, Set
 from src.sarvam_client import SarvamClient
 import src.tools as tools
 
@@ -16,6 +16,16 @@ class ExamPrepAgent:
         self.student_input_callback: Optional[Callable[[str], str]] = None
         self.history: List[Dict[str, str]] = []
         
+        # Load official syllabus topics
+        self.syllabus_topics: List[str] = []
+        if os.path.exists("data/syllabus.json"):
+            with open("data/syllabus.json", "r", encoding="utf-8") as f:
+                self.syllabus_topics = json.load(f)
+
+        # Allowed numbers and topics tracking for honesty verification
+        self.allowed_numbers: Set[float] = {0.0, 100.0, 35.0, 2020.0, 2021.0, 2022.0, 2023.0, 2024.0}
+        self.allowed_topics: Set[str] = set()
+        
         # Register available tools
         self.tool_map = {
             "extract_paper": tools.extract_paper,
@@ -27,10 +37,98 @@ class ExamPrepAgent:
             "speak": tools.speak
         }
 
-    def _get_system_prompt(self) -> str:
-        with open("data/syllabus.json", "r", encoding="utf-8") as f:
-            syllabus = json.load(f)
+    def _compact_tool_output(self, data: Any) -> str:
+        """
+        Converts tool output into compact JSON:
+        - Rounds float numbers to 1 decimal place.
+        - Drops chart paths, file paths, image/audio binary outputs.
+        - Truncates excessively long text fields (> 60 chars) to prevent token bloat.
+        """
+        def _compact(item: Any) -> Any:
+            if isinstance(item, float):
+                return round(item, 1)
+            elif isinstance(item, dict):
+                compact_dict = {}
+                for k, v in item.items():
+                    if k in ("chart_path", "image_path", "audio_file", "audio_path", "log_file", "output_path"):
+                        continue
+                    if k == "text" and isinstance(v, str) and len(v) > 60:
+                        compact_dict[k] = v[:60] + "..."
+                    else:
+                        compact_dict[k] = _compact(v)
+                return compact_dict
+            elif isinstance(item, list):
+                return [_compact(x) for x in item]
+            elif isinstance(item, str) and len(item) > 250:
+                return item[:250] + "..."
+            return item
 
+        compacted = _compact(data)
+        if isinstance(compacted, (dict, list)):
+            return json.dumps(compacted, separators=(',', ':'))
+        return str(compacted)
+
+    def _extract_numbers_from_obj(self, obj: Any) -> None:
+        """Recursively extracts all numbers from an object and adds to allowed_numbers."""
+        if isinstance(obj, (int, float)):
+            self.allowed_numbers.add(round(float(obj), 1))
+        elif isinstance(obj, dict):
+            for k, v in obj.items():
+                if isinstance(k, str) and k.replace('.', '', 1).isdigit():
+                    try:
+                        self.allowed_numbers.add(round(float(k), 1))
+                    except ValueError:
+                        pass
+                self._extract_numbers_from_obj(v)
+        elif isinstance(obj, (list, tuple, set)):
+            for item in obj:
+                self._extract_numbers_from_obj(item)
+
+    def _extract_topics_from_obj(self, obj: Any) -> None:
+        """Recursively extracts topic names from tool outputs."""
+        if isinstance(obj, dict):
+            if "topic" in obj and isinstance(obj["topic"], str):
+                self.allowed_topics.add(obj["topic"])
+            if "topics" in obj and isinstance(obj["topics"], dict):
+                for t in obj["topics"].keys():
+                    self.allowed_topics.add(t)
+            if "topic_hours" in obj and isinstance(obj["topic_hours"], dict):
+                for t in obj["topic_hours"].keys():
+                    self.allowed_topics.add(t)
+            if "weak_topics_boosted" in obj and isinstance(obj["weak_topics_boosted"], list):
+                for t in obj["weak_topics_boosted"]:
+                    self.allowed_topics.add(t)
+            for v in obj.values():
+                self._extract_topics_from_obj(v)
+        elif isinstance(obj, list):
+            for item in obj:
+                self._extract_topics_from_obj(item)
+
+    def _check_honesty(self, answer_text: str) -> Tuple[List[float], List[str]]:
+        """
+        Extracts numbers and syllabus topics from the answer and verifies
+        they appear in tool outputs or student context.
+        """
+        # 1. Extract all numbers
+        raw_numbers = re.findall(r'\b\d+(?:\.\d+)?\b', answer_text)
+        unsupported_nums = []
+        for num_str in raw_numbers:
+            val = round(float(num_str), 1)
+            # Check against allowed_numbers within 0.15 tolerance
+            supported = any(abs(val - allowed) < 0.15 for allowed in self.allowed_numbers)
+            if not supported:
+                unsupported_nums.append(val)
+
+        # 2. Extract topics mentioned
+        unsupported_topics = []
+        for topic in self.syllabus_topics:
+            if topic.lower() in answer_text.lower():
+                if topic not in self.allowed_topics:
+                    unsupported_topics.append(topic)
+
+        return unsupported_nums, unsupported_topics
+
+    def _get_system_prompt(self) -> str:
         return f"""You are the autonomous "Exam Prep Agent" powered by Sarvam AI.
 Your purpose: Help students prepare for their exams through data-backed study plans using real past papers and syllabus analysis.
 
@@ -44,7 +142,7 @@ AVAILABLE TOOLS:
 7. speak(text, language): Generates spoken audio summary via Sarvam Bulbul.
 
 OFFICIAL SYLLABUS TOPICS:
-{json.dumps(syllabus)}
+{json.dumps(self.syllabus_topics)}
 
 AVAILABLE PAST QUESTION PAPERS (in repository):
 - data/papers/CBSE_Class10_Maths_2024.pdf
@@ -52,7 +150,6 @@ AVAILABLE PAST QUESTION PAPERS (in repository):
 - data/papers/CBSE_Class10_Maths_2022.pdf
 - data/papers/CBSE_Class10_Maths_2021.pdf
 - data/papers/CBSE_Class10_Maths_2020.pdf
-(If past papers have already been extracted or are available in data/papers, you can analyze them directly or call get_topic_stats() if data is already populated.)
 
 CRITICAL BEHAVIOUR RULES:
 1. Autonomous Decision-Making: At every step, choose ONE action based on previous results.
@@ -95,6 +192,14 @@ Option C (Final answer once plan & stats are complete):
         self.student_input_callback = student_input_callback
         stats_called = False
         plan_built = False
+        
+        # Reset allowed numbers & topics for this run
+        self.allowed_numbers = {0.0, 100.0, 35.0, 2020.0, 2021.0, 2022.0, 2023.0, 2024.0}
+        self.allowed_topics = set()
+        
+        # Add numbers from user goal
+        for n in re.findall(r'\b\d+(?:\.\d+)?\b', user_goal):
+            self.allowed_numbers.add(round(float(n), 1))
         
         system_prompt = self._get_system_prompt()
         self.history = [
@@ -147,18 +252,14 @@ Option C (Final answer once plan & stats are complete):
                             file_p = tool_input.get("file_path", "data/papers/CBSE_Class10_Maths_2024.pdf")
                             output = tool_func(file_p)
                         elif tool_name == "tag_questions":
-                            # Load syllabus if not in input
-                            with open("data/syllabus.json", "r", encoding="utf-8") as f:
-                                syl = json.load(f)
                             qs = tool_input.get("questions", [])
                             if not qs:
-                                # Fetch untagged from DB
                                 import sqlite3
                                 conn = sqlite3.connect(tools.DB_PATH)
                                 df_db = pd.read_sql("SELECT paper, year, q_no, marks, text, confidence, evidence_source FROM questions WHERE topic IS NULL LIMIT 20", conn)
                                 conn.close()
                                 qs = df_db.to_dict(orient="records")
-                            output = tool_func(qs, syl)
+                            output = tool_func(qs, self.syllabus_topics)
                         elif tool_name == "build_plan":
                             wh = float(tool_input.get("weekly_hours", self.student_context.get("weekly_hours", 15)))
                             wks = int(tool_input.get("weeks", self.student_context.get("weeks", 4)))
@@ -180,16 +281,37 @@ Option C (Final answer once plan & stats are complete):
                             ans_str = str(ans)
                             if "hour" in q_text.lower():
                                 m = re.search(r'(\d+)', ans_str)
-                                if m: self.student_context["weekly_hours"] = float(m.group(1))
+                                if m: 
+                                    self.student_context["weekly_hours"] = float(m.group(1))
+                                    self.allowed_numbers.add(float(m.group(1)))
                             if "week" in q_text.lower():
                                 m = re.search(r'(\d+)', ans_str)
-                                if m: self.student_context["weeks"] = int(m.group(1))
+                                if m: 
+                                    w_val = int(m.group(1))
+                                    self.student_context["weeks"] = w_val
+                                    self.allowed_numbers.add(float(w_val))
+                                    for wi in range(1, w_val + 1):
+                                        self.allowed_numbers.add(float(wi))
                         else:
                             output = tool_func(**tool_input)
                     except Exception as err:
                         output = f"Tool execution error: {err}\n{traceback.format_exc()}"
 
-                # Format output preview for logging
+                # Extract allowed numbers and topics from real tool output
+                self._extract_numbers_from_obj(output)
+                self._extract_topics_from_obj(output)
+                
+                # Update total budget if hours & weeks are known
+                if "weekly_hours" in self.student_context and "weeks" in self.student_context:
+                    tot_budget = round(self.student_context["weekly_hours"] * self.student_context["weeks"], 1)
+                    self.allowed_numbers.add(tot_budget)
+                    for wi in range(1, int(self.student_context["weeks"]) + 1):
+                        self.allowed_numbers.add(float(wi))
+
+                # Format compact JSON for model observation (F1)
+                compact_tool_json = self._compact_tool_output(output)
+
+                # Format 200-char preview ONLY for the UI trace (F1)
                 output_str = str(output)
                 short_output = (output_str[:200] + "...") if len(output_str) > 200 else output_str
 
@@ -202,9 +324,9 @@ Option C (Final answer once plan & stats are complete):
                     "reason": reason
                 })
 
-                # Feed observation back to conversation history
+                # Feed full compact JSON back to conversation history
                 self.history.append({"role": "assistant", "content": json.dumps(decision)})
-                self.history.append({"role": "user", "content": f"Tool '{tool_name}' returned: {short_output}"})
+                self.history.append({"role": "user", "content": f"Tool '{tool_name}' returned: {compact_tool_json}"})
 
             # CASE B: ASK STUDENT A QUESTION
             elif action == "ask_user":
@@ -219,14 +341,28 @@ Option C (Final answer once plan & stats are complete):
 
                 print(f"   Student replied: '{answer}'")
                 
-                # Context extraction
+                # Context extraction & number registration
                 ans_str = str(answer)
+                for n in re.findall(r'\b\d+(?:\.\d+)?\b', ans_str):
+                    self.allowed_numbers.add(round(float(n), 1))
+
                 if "hour" in question.lower():
                     m = re.search(r'(\d+)', ans_str)
-                    if m: self.student_context["weekly_hours"] = float(m.group(1))
+                    if m: 
+                        self.student_context["weekly_hours"] = float(m.group(1))
+                        self.allowed_numbers.add(float(m.group(1)))
                 if "week" in question.lower() or "when" in question.lower() or "date" in question.lower():
                     m = re.search(r'(\d+)', ans_str)
-                    if m: self.student_context["weeks"] = int(m.group(1))
+                    if m: 
+                        w_val = int(m.group(1))
+                        self.student_context["weeks"] = w_val
+                        self.allowed_numbers.add(float(w_val))
+                        for wi in range(1, w_val + 1):
+                            self.allowed_numbers.add(float(wi))
+
+                if "weekly_hours" in self.student_context and "weeks" in self.student_context:
+                    tot_budget = round(self.student_context["weekly_hours"] * self.student_context["weeks"], 1)
+                    self.allowed_numbers.add(tot_budget)
 
                 self.trace.append({
                     "step": step,
@@ -250,6 +386,41 @@ Option C (Final answer once plan & stats are complete):
                     self.history.append({"role": "user", "content": "Rule Violation: You MUST call get_topic_stats() to get real data before providing the final answer."})
                     continue
 
+                # Honesty Verification in code (F1)
+                unsupported_nums, unsupported_topics = self._check_honesty(final_answer)
+                
+                if unsupported_nums or unsupported_topics:
+                    print(f"\n[Agent Honesty Verification]: Unsupported items detected!")
+                    print(f"  - Numbers: {unsupported_nums}")
+                    print(f"  - Topics:  {unsupported_topics}")
+                    
+                    correction_prompt = (
+                        f"HONESTY CORRECTION: Your final answer contained unsupported numbers or topics that were not returned by tools in this run:\n"
+                        f"- Unsupported numbers: {unsupported_nums}\n"
+                        f"- Unsupported topics: {unsupported_topics}\n"
+                        f"- Allowed numbers from tool outputs: {sorted(list(self.allowed_numbers))}\n"
+                        f"- Allowed topics from tool outputs: {sorted(list(self.allowed_topics))}\n\n"
+                        f"Please revise your final answer to ONLY use these verified numbers and topics. Do not invent any values."
+                    )
+                    
+                    self.history.append({"role": "assistant", "content": json.dumps(decision)})
+                    self.history.append({"role": "user", "content": correction_prompt})
+                    
+                    try:
+                        retry_dec = self.client.chat_completion(self.history, temperature=0.0, json_mode=True, max_retries=2)
+                        revised_answer = retry_dec.get("answer", "")
+                        if revised_answer:
+                            final_answer = revised_answer
+                    except Exception as e:
+                        print(f"[Agent Honesty Retry]: Error in revision call: {e}")
+
+                    # Re-check revised answer
+                    still_unsupported_nums, still_unsupported_topics = self._check_honesty(final_answer)
+                    if still_unsupported_nums or still_unsupported_topics:
+                        print("[Agent Honesty Verification]: Still contains unverified numbers. Adding warning tag.")
+                        warning = f"⚠️ [Unverified Numbers Warning: {still_unsupported_nums}]\n\n"
+                        final_answer = warning + final_answer
+
                 print(f"-> Model provided Final Answer!")
                 print(f"   Reason: {reason}")
                 self.trace.append({
@@ -268,7 +439,6 @@ Option C (Final answer once plan & stats are complete):
                 }
 
             else:
-                # Invalid action fallback
                 self.history.append({"role": "user", "content": "Invalid response format. Must contain 'action': 'tool' | 'ask_user' | 'final'."})
 
         # Max steps reached without final
