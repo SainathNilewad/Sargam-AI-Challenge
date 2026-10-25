@@ -1,0 +1,22 @@
+paper_year,question_number,marks,question_text,source_file,page_number,evidence_source,confidence_flag
+2023,Q1,1.0,"If two positive integers a and b are written as a = x³ y² and b = xy³, where x, y are prime numbers, then (a = x³ y² b = xy³ , HCF(a, b) )",CBSE_Class10_Maths_2023.pdf,1,CBSE_Class10_Maths_2023.pdf:Page 1:Q1,OK
+2023,Q2,1.0,Find the zeroes of the quadratic polynomial p(x) = x² - 3x - 4.,CBSE_Class10_Maths_2023.pdf,1,CBSE_Class10_Maths_2023.pdf:Page 1:Q2,OK
+2023,Q3,1.0,Find the discriminant of the quadratic equation 2x² - 4x + 3 = 0.,CBSE_Class10_Maths_2023.pdf,1,CBSE_Class10_Maths_2023.pdf:Page 1:Q3,OK
+2023,Q4,1.0,"Which term of the AP: 2, 7, 12, ... is 47?",CBSE_Class10_Maths_2023.pdf,1,CBSE_Class10_Maths_2023.pdf:Page 1:Q4,OK
+2023,Q5,1.0,"Find the distance of point P(-6, 8) from the origin.",CBSE_Class10_Maths_2023.pdf,1,CBSE_Class10_Maths_2023.pdf:Page 1:Q5,OK
+2023,Q6,1.0,"If θ+ θ= √(2) θ, then find the value of θ.",CBSE_Class10_Maths_2023.pdf,1,CBSE_Class10_Maths_2023.pdf:Page 1:Q6,OK
+2023,Q7,1.0,A card is drawn from a well-shuffled deck of 52 playing cards. Find the probability of getting a red king.,CBSE_Class10_Maths_2023.pdf,1,CBSE_Class10_Maths_2023.pdf:Page 1:Q7,OK
+2023,Q8,1.0,"If the mean of observations x, x+3, x+5, x+7, x+10 is 9, find the value of x.",CBSE_Class10_Maths_2023.pdf,1,CBSE_Class10_Maths_2023.pdf:Page 1:Q8,OK
+2023,Q9,2.0,Prove that sqrt(5) is an irrational number.,CBSE_Class10_Maths_2023.pdf,1,CBSE_Class10_Maths_2023.pdf:Page 1:Q9,OK
+2023,Q10,2.0,Solve the following pair of linear equations: 2x + 3y = 11 and 2x - 4y = -24.,CBSE_Class10_Maths_2023.pdf,1,CBSE_Class10_Maths_2023.pdf:Page 1:Q10,OK
+2023,Q11,2.0,"Find the coordinates of the point which divides the line segment joining (-1, 7) and (4, -3) in ratio 2:3.",CBSE_Class10_Maths_2023.pdf,1,CBSE_Class10_Maths_2023.pdf:Page 1:Q11,OK
+2023,Q12,2.0,"If (A + B) = √(3) and (A - B) = 1/√(3), find the values of A and B.",CBSE_Class10_Maths_2023.pdf,1,CBSE_Class10_Maths_2023.pdf:Page 1:Q12,OK
+2023,Q13,3.0,Find the zeroes of polynomial 6x² - 3 - 7x and verify relationship with coefficients.,CBSE_Class10_Maths_2023.pdf,1,CBSE_Class10_Maths_2023.pdf:Page 1:Q13,OK
+2023,Q14,3.0,"If the sum of first 7 terms of an AP is 49 and 17 terms is 289, find sum of first n terms.",CBSE_Class10_Maths_2023.pdf,1,CBSE_Class10_Maths_2023.pdf:Page 1:Q14,OK
+2023,Q15,3.0,Prove that lengths of tangents drawn from an external point to a circle are equal.,CBSE_Class10_Maths_2023.pdf,1,CBSE_Class10_Maths_2023.pdf:Page 1:Q15,OK
+2023,Q16,3.0,A solid cone of radius 1 cm stands on hemisphere of same radius. Height of cone is 1 cm. Find volume.,CBSE_Class10_Maths_2023.pdf,1,CBSE_Class10_Maths_2023.pdf:Page 1:Q16,OK
+2023,Q17,5.0,A motor boat speed in still water is 18 km/h. Takes 1 hour more for 24 km upstream than downstream. Find ( Speed of stream ),CBSE_Class10_Maths_2023.pdf,1,CBSE_Class10_Maths_2023.pdf:Page 1:Q17,OK
+2023,Q18,5.0,State and prove Basic Proportionality Theorem (Thales Theorem) for a triangle.,CBSE_Class10_Maths_2023.pdf,1,CBSE_Class10_Maths_2023.pdf:Page 1:Q18,OK
+2023,Q19,5.0,"From top of 7 m building, elevation of cable tower top is 60 deg, depression of foot is 45 deg. Find tower height. (7 मीटर इमारत की छत से, टेलीग्राफ खंभे के शीर्ष का उन्नयन कोण 60 डिग्री और पाद का अवनमन कोण 45 डिग्री है। खंभे की ऊंचाई ज्ञात कीजिए।)",CBSE_Class10_Maths_2023.pdf,1,CBSE_Class10_Maths_2023.pdf:Page 1:Q19,OK
+2023,Q20,5.0,"Median of frequency distribution is 525. Find x and y if total frequency is 100. (आवृत्ति बंटन का माध्यक 525 है। यदि कुल आवृत्ति 100 है, तो x और y ज्ञात कीजिए।)",CBSE_Class10_Maths_2023.pdf,1,CBSE_Class10_Maths_2023.pdf:Page 1:Q20,OK
+2023,Q21,,What is the required condition for ??? [Needs Review],CBSE_Class10_Maths_2023.pdf,1,CBSE_Class10_Maths_2023.pdf:Page 1:Q21,needs review

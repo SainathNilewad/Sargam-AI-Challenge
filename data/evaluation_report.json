@@ -1,0 +1,111 @@
+{
+  "part_a_tagging_accuracy": {
+    "total": 30,
+    "correct": 25,
+    "accuracy_pct": 83.33333333333334,
+    "failures": [
+      {
+        "id": 6,
+        "ground_truth": "Polynomials",
+        "predicted": "Circles",
+        "confidence": 0.0,
+        "question_snippet": "In the given figure, a tangent has been drawn at a point P o"
+      },
+      {
+        "id": 13,
+        "ground_truth": "Real Numbers",
+        "predicted": "unclear",
+        "confidence": 0.0,
+        "question_snippet": "Assertion (A): HCF of any two consecutive even natural numbe"
+      },
+      {
+        "id": 14,
+        "ground_truth": "Areas Related to Circles",
+        "predicted": "Circles",
+        "confidence": 0.0,
+        "question_snippet": "Assertion (A): If the radius of sector of a circle is reduce"
+      },
+      {
+        "id": 15,
+        "ground_truth": "Introduction to Trigonometry",
+        "predicted": "unclear",
+        "confidence": 0.0,
+        "question_snippet": "Evaluate:  2\ud835\udc60\ud835\udc56\ud835\udc5b 260\ud835\udc5c   \u2212 \ud835\udc61\ud835\udc4e\ud835\udc5b230\ud835\udc5c \ud835\udc60\ud835\udc52\ud835\udc502 45\ud835\udc5c  2"
+      },
+      {
+        "id": 23,
+        "ground_truth": "Arithmetic Progressions",
+        "predicted": "unclear",
+        "confidence": 0.0,
+        "question_snippet": "Ms. Sheela visited a store near her house and found that the"
+      }
+    ]
+  },
+  "part_b_agent_scenarios": {
+    "total_scenarios": 10,
+    "passed": 10,
+    "success_rate_pct": 100.0,
+    "scenarios": [
+      {
+        "id": 1,
+        "name": "Missing Hours Prompting",
+        "passed": true,
+        "details": "Agent requested study hours"
+      },
+      {
+        "id": 2,
+        "name": "Upfront Info Handling",
+        "passed": true,
+        "details": "Steps taken: 4"
+      },
+      {
+        "id": 3,
+        "name": "Safety Guard Before Stats",
+        "passed": true,
+        "details": "Code contains active stats_called prerequisite"
+      },
+      {
+        "id": 4,
+        "name": "Review Low Conf / Unclear",
+        "passed": true,
+        "details": "Review items: 21"
+      },
+      {
+        "id": 5,
+        "name": "Hours Conservation",
+        "passed": true,
+        "details": "Allocated: 42.0h == Expected: 42.0h"
+      },
+      {
+        "id": 6,
+        "name": "Weak Topic Boost",
+        "passed": true,
+        "details": "Triangles boosted: 3.1h"
+      },
+      {
+        "id": 7,
+        "name": "Strict Syllabus Adherence",
+        "passed": true,
+        "details": "Verified 11 topics against syllabus"
+      },
+      {
+        "id": 8,
+        "name": "10-Step Cap Enforcement",
+        "passed": true,
+        "details": "Halted cleanly at step 2"
+      },
+      {
+        "id": 9,
+        "name": "Bulbul Spoken Summary",
+        "passed": true,
+        "details": "Audio file: data/summary.wav"
+      },
+      {
+        "id": 10,
+        "name": "Trace & Explainability",
+        "passed": true,
+        "details": "5 steps logged with rationale"
+      }
+    ]
+  }
+}
