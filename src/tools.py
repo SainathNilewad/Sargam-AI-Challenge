@@ -30,6 +30,24 @@ def init_db():
         topic TEXT
     )
     """)
+    # Remove existing duplicates keeping the best record (tagged over untagged, then highest id)
+    cursor.execute("""
+    DELETE FROM questions
+    WHERE id NOT IN (
+        SELECT id FROM (
+            SELECT id, paper, q_no,
+                   ROW_NUMBER() OVER (
+                       PARTITION BY paper, q_no 
+                       ORDER BY (CASE WHEN topic IS NOT NULL AND topic != 'unclear' THEN 2 WHEN topic = 'unclear' THEN 1 ELSE 0 END) DESC, id DESC
+                   ) as rn
+            FROM questions
+        ) WHERE rn = 1
+    )
+    """)
+    # Unique index on (paper, q_no)
+    cursor.execute("""
+    CREATE UNIQUE INDEX IF NOT EXISTS idx_questions_paper_qno ON questions(paper, q_no);
+    """)
     conn.commit()
     conn.close()
 
@@ -151,13 +169,19 @@ def extract_paper(file_path: str, max_retries: int = 1) -> List[Dict[str, Any]]:
                 current_q_lines.append(line_clean)
         finalize_q()
 
-    # Save to SQLite database
+    # Save to SQLite database (replaces existing rows for that paper and q_no)
     conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
     for q in extracted_questions:
         cursor.execute("""
         INSERT INTO questions (paper, year, q_no, marks, text, confidence, evidence_source, topic)
         VALUES (?, ?, ?, ?, ?, ?, ?, NULL)
+        ON CONFLICT(paper, q_no) DO UPDATE SET
+            year = excluded.year,
+            marks = excluded.marks,
+            text = excluded.text,
+            confidence = excluded.confidence,
+            evidence_source = excluded.evidence_source
         """, (q["paper"], q["year"], q["q_no"], q["marks"], q["text"], q["confidence"], q["evidence_source"]))
     conn.commit()
     conn.close()
@@ -264,21 +288,35 @@ Return ONLY valid JSON in this exact structure:
 
     return tagged_results
 
-# =====================================================================
-# TOOL 3: get_topic_stats()
-# =====================================================================
+REQUIRED_PAPERS = [
+    "CBSE_Class10_Maths_2020.pdf",
+    "CBSE_Class10_Maths_2021.pdf",
+    "CBSE_Class10_Maths_2022.pdf",
+    "CBSE_Class10_Maths_2023.pdf",
+    "CBSE_Class10_Maths_2024.pdf"
+]
+
 def get_topic_stats() -> Dict[str, Any]:
     """
     Tool 3: get_topic_stats() -> frequency %, marks weightage %, and trend by year.
     Computed in pandas, NEVER by the model.
+    Only successful if all 5 papers (2020-2024) are extracted and tagged.
     Generates and saves visual charts to data/topic_weightage.png and data/year_trend.png.
     """
     conn = sqlite3.connect(DB_PATH)
+    cur = conn.cursor()
+    cur.execute("SELECT paper, COUNT(*), COUNT(topic) FROM questions GROUP BY paper")
+    coverage_rows = cur.fetchall()
+    paper_map = {r[0]: {"total": r[1], "tagged": r[2]} for r in coverage_rows}
+
+    missing_papers = [p for p in REQUIRED_PAPERS if p not in paper_map or paper_map[p]["total"] == 0]
+    untagged_papers = {p: (paper_map[p]["total"] - paper_map[p]["tagged"]) for p in paper_map if paper_map[p]["tagged"] < paper_map[p]["total"]}
+    is_coverage_complete = (len(missing_papers) == 0 and len(untagged_papers) == 0)
+
     df = pd.read_sql_query("SELECT paper, year, q_no, marks, topic FROM questions WHERE topic IS NOT NULL AND topic != 'unclear'", conn)
     conn.close()
 
     if df.empty:
-        # Fallback to test set draft if questions table is empty
         test_csv = os.path.join("data", "test_set_draft.csv")
         if os.path.exists(test_csv):
             raw = pd.read_csv(test_csv)
@@ -286,7 +324,7 @@ def get_topic_stats() -> Dict[str, Any]:
                 "paper": raw["source_file"],
                 "year": raw["paper_year"],
                 "q_no": raw["question_number"],
-                "marks": [1.0 if int(re.sub(r'\D', '', q or '1')) <= 20 else 3.0 for q in raw["question_number"]],
+                "marks": [1.0 if int(re.sub(r'\D', '', str(q or '1'))) <= 20 else 3.0 for q in raw["question_number"]],
                 "topic": raw["proposed_topic"]
             })
 
@@ -294,7 +332,15 @@ def get_topic_stats() -> Dict[str, Any]:
     total_marks = df["marks"].sum()
 
     if total_questions == 0 or total_marks == 0:
-        return {"error": "No tagged questions available to compute statistics."}
+        return {
+            "status": "partial_data",
+            "partial_data": {
+                "message": "No tagged questions available.",
+                "missing_papers": missing_papers,
+                "untagged_papers": untagged_papers
+            },
+            "error": "No tagged questions available to compute statistics."
+        }
 
     # 1. Topic Frequency % = (questions on topic / total questions) * 100
     freq_series = df["topic"].value_counts()
@@ -334,7 +380,8 @@ def get_topic_stats() -> Dict[str, Any]:
     # Save summary stats to CSV
     stats_df.to_csv(os.path.join("data", "topic_stats.csv"), encoding="utf-8")
 
-    return {
+    result_payload = {
+        "status": "success" if is_coverage_complete else "partial_data",
         "total_questions": int(total_questions),
         "total_marks": float(total_marks),
         "topics": stats_df.to_dict(orient="index"),
@@ -342,6 +389,15 @@ def get_topic_stats() -> Dict[str, Any]:
         "chart_path": chart_path,
         "trend_years": [int(y) for y in trend_df.index.tolist()]
     }
+
+    if not is_coverage_complete:
+        result_payload["partial_data"] = {
+            "message": "Coverage incomplete: every paper (2020-2024) must be extracted and tagged.",
+            "missing_papers": missing_papers,
+            "untagged_papers": untagged_papers
+        }
+
+    return result_payload
 
 # =====================================================================
 # TOOL 4: get_review_items()
