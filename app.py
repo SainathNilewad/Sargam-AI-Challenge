@@ -446,6 +446,14 @@ with tab2:
             use_container_width=True,
             height=450
         )
+        csv_data = df_display.to_csv(index=False).encode('utf-8')
+        st.download_button(
+            label="📥 Export Extracted Questions (CSV)",
+            data=csv_data,
+            file_name="cbse_extracted_questions.csv",
+            mime="text/csv",
+            use_container_width=True
+        )
 
 # TAB 3: Topic Weightage Analytics
 with tab3:
@@ -562,8 +570,30 @@ with tab4:
                     """, unsafe_allow_html=True)
                     for item in w_data.get("target_topics", []):
                         badge_star = "⭐ " if item.get("is_weak_topic") else ""
-                        st.markdown(f"- **{badge_star}{item['topic']}**: {item['hours']}h")
                     st.markdown("</div>", unsafe_allow_html=True)
+
+        st.markdown("<br>", unsafe_allow_html=True)
+        col_act1, col_act2, col_act3 = st.columns(3)
+        with col_act1:
+            plan_csv = df_plan.to_csv(index=False).encode('utf-8')
+            st.download_button("📥 Download Plan (CSV)", data=plan_csv, file_name="weekly_study_plan.csv", mime="text/csv", use_container_width=True)
+        with col_act2:
+            plan_json = json.dumps(plan, indent=2).encode('utf-8')
+            st.download_button("📥 Download Plan (JSON)", data=plan_json, file_name="weekly_study_plan.json", mime="application/json", use_container_width=True)
+        with col_act3:
+            if st.button("🎙️ Play Voice Summary in Tab", use_container_width=True):
+                with st.spinner("Generating speech via Sarvam Bulbul..."):
+                    summary_text = (
+                        f"नमस्ते! आपकी परीक्षा के लिए {weeks_input} सप्ताह का अध्ययन प्लान तैयार है। "
+                        f"कुल {weekly_hours_input * weeks_input} घंटे पढ़ाई होगी जिसमें कमजोर विषयों पर 35 प्रतिशत अतिरिक्त ध्यान दिया गया है।"
+                        if lang_code == "hi-IN" else
+                        f"Hello! Your {weeks_input}-week study plan is ready with {weekly_hours_input * weeks_input} total hours. "
+                        f"Weak topics have been prioritized with a 35 percent boost."
+                    )
+                    v_res = tools.speak(summary_text, lang_code)
+                    if v_res and os.path.exists(v_res):
+                        st.audio(v_res)
+                        st.success("Spoken summary generated!")
 
 # TAB 5: Milestone 8 Evaluation Benchmark
 with tab5:
