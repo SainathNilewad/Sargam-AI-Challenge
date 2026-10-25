@@ -1,0 +1,128 @@
+import os
+from PIL import Image, ImageDraw, ImageFont
+
+paper_content_page1 = """CBSE BOARD EXAMINATION 2023
+MATHEMATICS (STANDARD) / गणित (मानक)
+Time Allowed: 3 Hours                                    Maximum Marks: 80
+General Instructions:
+Section A consists of 8 questions of 1 mark each.
+Section B consists of 4 questions of 2 marks each.
+Section C consists of 4 questions of 3 marks each.
+Section D consists of 4 questions of 5 marks each.
+
+SECTION A (1 Mark each)
+Q1. If two positive integers a and b are written as a = x^3 y^2 and b = xy^3, where x, y are prime numbers, then find HCF(a, b). [1 mark]
+    (यदि दो धनात्मक पूर्णांक a = x^3 y^2 और b = xy^3 हैं, तो HCF(a, b) ज्ञात कीजिए।)
+
+Q2. Find the zeroes of the quadratic polynomial p(x) = x^2 - 3x - 4. [1 mark]
+    (द्विघात बहुपद p(x) = x^2 - 3x - 4 के शून्यक ज्ञात कीजिए।)
+
+Q3. Find the discriminant of the quadratic equation 2x^2 - 4x + 3 = 0. [1 mark]
+    (द्विघात समीकरण 2x^2 - 4x + 3 = 0 का विविक्तकर ज्ञात कीजिए।)
+
+Q4. Which term of the AP: 2, 7, 12, ... is 47? [1 mark]
+    (समान्तर श्रेढ़ी 2, 7, 12, ... का कौन सा पद 47 है?)
+
+Q5. Find the distance of point P(-6, 8) from the origin. [1 mark]
+    (बिंदु P(-6, 8) की मूल बिंदु से दूरी ज्ञात कीजिए।)
+
+Q6. If sin theta + cos theta = sqrt(2) cos theta, then find the value of tan theta. [1 mark]
+    (यदि sin theta + cos theta = sqrt(2) cos theta है, तो tan theta का मान ज्ञात कीजिए।)
+
+Q7. A card is drawn from a well-shuffled deck of 52 playing cards. Find the probability of getting a red king. [1 mark]
+    (52 ताश के पत्तों में से एक लाल बादशाह मिलने की प्रायिकता ज्ञात कीजिए।)
+
+Q8. If the mean of observations x, x+3, x+5, x+7, x+10 is 9, find the value of x. [1 mark]
+    (यदि प्रेक्षणों x, x+3, x+5, x+7, x+10 का माध्य 9 है, तो x का मान ज्ञात कीजिए।)
+"""
+
+paper_content_page2 = """SECTION B (2 Marks each)
+Q9. Prove that sqrt(5) is an irrational number. [2 marks]
+    (सिद्ध कीजिए कि sqrt(5) एक अपरिमेय संख्या है।)
+
+Q10. Solve the following pair of linear equations: 2x + 3y = 11 and 2x - 4y = -24. [2 marks]
+     (रैखिक समीकरण युग्म 2x + 3y = 11 और 2x - 4y = -24 को हल कीजिए।)
+
+Q11. Find the coordinates of the point which divides the line segment joining (-1, 7) and (4, -3) in ratio 2:3. [2 marks]
+     (बिंदुओं (-1, 7) और (4, -3) को 2:3 के अनुपात में विभाजित करने वाले बिंदु के निर्देशांक ज्ञात कीजिए।)
+
+Q12. If tan(A + B) = sqrt(3) and tan(A - B) = 1/sqrt(3), find the values of A and B. [2 marks]
+     (यदि tan(A + B) = sqrt(3) तथा tan(A - B) = 1/sqrt(3) है, तो A और B ज्ञात कीजिए।)
+
+SECTION C (3 Marks each)
+Q13. Find the zeroes of polynomial 6x^2 - 3 - 7x and verify relationship with coefficients. [3 marks]
+     (बहुपद 6x^2 - 3 - 7x के शून्यक ज्ञात कीजिए तथा गुणांकों के साथ संबंध सत्यापित कीजिए।)
+
+Q14. If the sum of first 7 terms of an AP is 49 and 17 terms is 289, find sum of first n terms. [3 marks]
+     (यदि AP के प्रथम 7 पदों का योग 49 और 17 पदों का योग 289 है, तो प्रथम n पदों का योग ज्ञात कीजिए।)
+
+Q15. Prove that lengths of tangents drawn from an external point to a circle are equal. [3 marks]
+     (सिद्ध कीजिए कि बाह्य बिंदु से वृत्त पर खींची गई स्पर्श रेखाओं की लंबाइयाँ बराबर होती हैं।)
+
+Q16. A solid cone of radius 1 cm stands on hemisphere of same radius. Height of cone is 1 cm. Find volume. [3 marks]
+     (1 सेमी त्रिज्या के अर्धगोले पर 1 सेमी ऊँचाई का शंकु है। ठोस का आयतन ज्ञात कीजिए।)
+"""
+
+paper_content_page3 = """SECTION D (5 Marks each)
+Q17. A motor boat speed in still water is 18 km/h. Takes 1 hour more for 24 km upstream than downstream. Find stream speed. [5 marks]
+     (शांत जल में नाव की चाल 18 किमी/घंटा है। धारा की चाल ज्ञात कीजिए।)
+
+Q18. State and prove Basic Proportionality Theorem (Thales Theorem) for a triangle. [5 marks]
+     (त्रिभुज के लिए आधारभूत समानुपातिकता प्रमेय (थेल्स प्रमेय) को सिद्ध कीजिए।)
+
+Q19. From top of 7 m building, elevation of cable tower top is 60 deg, depression of foot is 45 deg. Find tower height. [5 marks]
+     (7 मी ऊँचे भवन से टावर के शिखर का उन्नयन कोण 60 और पाद का अवनमन कोण 45 है। ऊँचाई ज्ञात कीजिए।)
+
+Q20. Median of frequency distribution is 525. Find x and y if total frequency is 100. [5 marks]
+     (बारंबारता बंटन की माध्यिका 525 है। यदि कुल बारंबारता 100 है, तो x और y का मान निकालें।)
+
+Q21. [BLURRED_FRAGMENT] What is the required condition for ??? [Needs Review]
+"""
+
+def create_page_image(text):
+    # A4 size at 150 DPI: 1240 x 1754
+    width, height = 1240, 1754
+    img = Image.new('RGB', (width, height), color=(255, 255, 255))
+    draw = ImageDraw.Draw(img)
+    
+    # Border
+    draw.rectangle([40, 40, width-40, height-40], outline=(180, 180, 180), width=2)
+    
+    # Try default font
+    try:
+        font = ImageFont.truetype("arial.ttf", 24)
+        header_font = ImageFont.truetype("arialbd.ttf", 28)
+    except:
+        font = ImageFont.load_default()
+        header_font = font
+        
+    y = 60
+    for line in text.strip().split('\n'):
+        if "CBSE BOARD" in line or "SECTION" in line or "MATHEMATICS" in line:
+            draw.text((70, y), line, fill=(10, 10, 80), font=header_font)
+            y += 42
+        else:
+            draw.text((70, y), line, fill=(30, 30, 30), font=font)
+            y += 34
+            
+    return img
+
+if __name__ == "__main__":
+    os.makedirs("sample_papers", exist_ok=True)
+    img1 = create_page_image(paper_content_page1)
+    img2 = create_page_image(paper_content_page2)
+    img3 = create_page_image(paper_content_page3)
+    
+    # Save as images
+    img1.save("sample_papers/CBSE_Class10_Maths_2023_p1.png")
+    img2.save("sample_papers/CBSE_Class10_Maths_2023_p2.png")
+    img3.save("sample_papers/CBSE_Class10_Maths_2023_p3.png")
+    
+    # Save as multi-page PDF
+    img1.save("sample_papers/CBSE_Class10_Maths_2023.pdf", "PDF", resolution=150.0, save_all=True, append_images=[img2, img3])
+    
+    # Also save text version
+    with open("sample_papers/CBSE_Class10_Maths_2023.txt", "w", encoding="utf-8") as f:
+        f.write(paper_content_page1 + "\n\n" + paper_content_page2 + "\n\n" + paper_content_page3)
+        
+    print("Successfully generated sample paper files in sample_papers/")
